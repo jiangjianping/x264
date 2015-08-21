@@ -540,18 +540,16 @@ function x264_coeff_level_run4_aarch64, export=1
     ret
 endfunc
 
-.macro X264_COEFF_LEVEL_RUN size
+.macro X264_COEFF_LEVEL_RUN size shiftw
 function x264_coeff_level_run\size\()_neon, export=1
 .if \size == 15
     sub         x0,  x0,  #2
 .endif
 .if         \size < 15
-    .equ        shiftw, 3
     ld1         {v0.8h}, [x0]
     uqxtn       v0.8b,  v0.8h
     cmtst       v0.8b,  v0.8b,  v0.8b
 .else
-    .equ        shiftw, 2
     ld1         {v0.8h,v1.8h}, [x0]
     uqxtn       v0.8b,  v0.8h
     uqxtn2      v0.16b, v1.8h
@@ -565,15 +563,15 @@ function x264_coeff_level_run\size\()_neon, export=1
 
     coeff_level_run_start \size
 
-    coeff_level_run shiftw
+    coeff_level_run \shiftw
 
     ret
 endfunc
 .endm
 
-X264_COEFF_LEVEL_RUN 8
-X264_COEFF_LEVEL_RUN 15
-X264_COEFF_LEVEL_RUN 16
+X264_COEFF_LEVEL_RUN 8 3
+X264_COEFF_LEVEL_RUN 15 2
+X264_COEFF_LEVEL_RUN 16 2
 
 function x264_denoise_dct_neon, export=1
 1:  subs        w3,  w3,  #16
